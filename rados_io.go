@@ -110,7 +110,7 @@ func (r *RadosIoCtx) Append(oid string, bin []byte) error {
 }
 
 func (r *RadosIoCtx) Read(oid string, length, offset uint64) ([]byte, error) {
-    var buf = make([]byte, 0, length)
+    var buf = make([]byte, length)
     cerr := C.rados_read(*r.ctx, C.CString(oid), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(length), C.uint64_t(offset))
     if cerr < 0 {
         return nil, errors.New("read data failed")
