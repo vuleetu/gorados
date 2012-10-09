@@ -64,5 +64,13 @@ func main() {
         }
     }
 
+    snaps, err := ctx.SnapList()
+    if err != nil {
+        log.Println("error is", err.Error())
+        return
+    }
+
+    log.Println(snaps)
+
     log.Println("Done")
 }

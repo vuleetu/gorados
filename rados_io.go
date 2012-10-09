@@ -75,8 +75,8 @@ func (r *RadosIoCtx) GetId() uint64 {
 }
 
 func (r *RadosIoCtx) GetPoolName() (string, error) {
-    var buf [255]C.char
-    cerr := C.rados_ioctx_get_pool_name(*r.ctx, &buf[0], 254)
+    var buf [MAX_NAME_LEN]C.char
+    cerr := C.rados_ioctx_get_pool_name(*r.ctx, &buf[0], MAX_NAME_LEN-1)
 
     if cerr < 0 {
         return "", errors.New("get pool name failed")

@@ -43,6 +43,16 @@ func (r *Rados) ClusterCreateAsUser(id string) error {
     return nil
 }
 
+/*
+Configure the cluster handle using a Ceph config file.
+
+If path is NULL, the default locations are searched, and the first found is used. The locations are:
+
+$CEPH_CONF (environment variable)
+/etc/ceph/ceph.conf
+~/.ceph/config
+ceph.conf (in the current working directory)
+*/
 func (r *Rados) ClusterAutoConfig() error {
     cerr := C.rados_conf_read_file(*r.cluster, nil)
     if cerr < 0 {

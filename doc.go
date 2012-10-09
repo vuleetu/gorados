@@ -1,3 +1,5 @@
-//gorados is a rados binding for go
+/*
+gorados is a rados binding for go
+*/
 
 package gorados

@@ -14,3 +14,4 @@ func New() *Rados {
     return &Rados{}
 }
 
+const MAX_NAME_LEN = 1024
