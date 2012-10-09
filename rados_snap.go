@@ -60,3 +60,33 @@ func (r *RadosIoCtx) SnapList() ([]RadosSnapId, error) {
     }
     return []RadosSnapId{}, nil
 }
+
+func (r *RadosIoCtx) SnapLookup(snapname string) (RadosSnapId, error) {
+    var snapid C.rados_snap_t
+    cerr := C.rados_ioctx_snap_lookup(*r.ctx, C.CString(snapname), &snapid)
+    if cerr < 0 {
+        return 0, errors.New("lookup snap failed")
+    }
+
+    return RadosSnapId(snapid), nil
+}
+
+func (r *RadosIoCtx) SnapGetName(snapid RadosSnapId) (string, error) {
+    var snapname [MAX_NAME_LEN]C.char
+    cerr := C.rados_ioctx_snap_get_name(*r.ctx, C.rados_snap_t(snapid), &snapname[0], MAX_NAME_LEN)
+    if cerr < 0 {
+        return "", errors.New("get snap name failed")
+    }
+
+    return C.GoString(&snapname[0]), nil
+}
+
+func (r *RadosIoCtx) SnapGetStamp(snapid RadosSnapId) (uint64, error) {
+    var stamp C.time_t
+    cerr := C.rados_ioctx_snap_get_stamp(*r.ctx, C.rados_snap_t(snapid), &stamp)
+    if cerr < 0 {
+        return 0, errors.New("get snap stamp failed")
+    }
+
+    return uint64(C.uint64_t(stamp)), nil
+}
