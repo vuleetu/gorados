@@ -1,0 +1,5 @@
+[client.pool.yunio2]
+	key = AQCQmkFQiMRKDhAAM1N1FYMPfUZhTeeGblf9Pg==
+	caps mds = "allow"
+	caps mon = "allow r"
+	caps osd = "allow rw pool=yunio2"

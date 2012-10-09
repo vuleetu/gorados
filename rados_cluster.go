@@ -3,14 +3,13 @@ package gorados
 /*
 #cgo LDFLAGS: -lrados
 #include <stdio.h>
-//#include <stdlib.h>
+#include <string.h>
 #include "rados/librados.h"
 */
 import "C"
 
 import (
     "errors"
-    "unsafe"
     "log"
 )
 
@@ -54,7 +53,7 @@ func (r *Rados) ClusterAutoConfig() error {
 }
 
 func (r *Rados) ClusterConfig(filename string) error {
-    cerr := C.rados_conf_read_file(*r.cluster, C.CString(filename))
+    cerr := C.rados_conf_read_file(*(r.cluster), C.CString(filename))
     if cerr < 0 {
         return errors.New("read config failed")
     }
@@ -74,6 +73,7 @@ func (r *Rados) ClusterSetConfig(option, value string) error {
 func (r *Rados) ClusterConnect() error {
     cerr := C.rados_connect(*r.cluster)
     if cerr < 0 {
+        log.Println("error is", C.GoString(C.strerror(-cerr)))
         return errors.New("connect to ceph failed")
     }
 
@@ -90,10 +90,3 @@ func (r *Rados) ClusterGetInstanceId() uint64 {
     return uint64(instance_id)
 }
 
-func (r *Rados) ClusterListPools() {
-    buflen := C.rados_pool_list(*r.cluster, nil, C.size_t(0))
-    buflen += 10 //this is copied from erlrados
-    buf := make([]byte, buflen)
-    C.rados_pool_list(*r.cluster, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(buflen))
-    log.Println(buf)
-}
