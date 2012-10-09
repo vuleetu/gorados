@@ -34,8 +34,8 @@ func (r *RadosIoCtx) Destroy(poolname string) {
 }
 
 type RadosObjectStat struct{
-    size uint64
-    timestamp uint64
+    Size uint64
+    Timestamp uint64
 }
 
 func (r *RadosIoCtx) Stat(oid string) (*RadosObjectStat, error){
