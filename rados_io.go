@@ -29,7 +29,7 @@ func (r *Rados) IoCtxCreate(poolname string) (*RadosIoCtx, error) {
     return &RadosIoCtx{&ctx}, nil
 }
 
-func (r *RadosIoCtx) Destroy(poolname string) {
+func (r *RadosIoCtx) Destroy() {
     C.rados_ioctx_destroy(*r.ctx)
 }
 

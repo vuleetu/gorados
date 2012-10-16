@@ -34,7 +34,8 @@ func main() {
         return
     }
 
-    stat, err := ctx.Stat("30817")
+    //stat, err := ctx.Stat("30817")
+    stat, err := ctx.Stat("30825")
     if err != nil {
         log.Println("error is", err.Error())
         return
