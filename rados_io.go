@@ -165,19 +165,19 @@ type RadosListCtx struct{
     list_ctx *C.rados_list_ctx_t
 }
 
-func (ctx *RadosListCtx) Next() error {
-    var buf [1]*C.char
-    cerr := C.rados_objects_list_next(*ctx.list_ctx, &buf[0], nil)
+func (ctx *RadosListCtx) Next() (string, error) {
+    var buf *C.char
+    cerr := C.rados_objects_list_next(*ctx.list_ctx, &buf, nil)
     if cerr == -C.ENOENT {
         log.Println("Next failed")
-        return io.EOF
+        return "", io.EOF
     }
     if cerr < 0 {
         log.Println("Next failed")
-        return errors.New("next failed")
+        return "", errors.New("next failed")
     }
-    log.Println(C.GoString(buf[0]))
-    return nil
+    //log.Println(C.GoString(buf))
+    return nil, C.GoString(buf)
 }
 
 func (ctx *RadosListCtx) Close() {
