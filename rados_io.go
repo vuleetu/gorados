@@ -177,7 +177,7 @@ func (ctx *RadosListCtx) Next() (string, error) {
         return "", errors.New("next failed")
     }
     //log.Println(C.GoString(buf))
-    return nil, C.GoString(buf)
+    return C.GoString(buf), nil
 }
 
 func (ctx *RadosListCtx) Close() {
