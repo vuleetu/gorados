@@ -118,6 +118,11 @@ func (r *RadosIoCtx) Read(oid string, length, offset uint64) ([]byte, error) {
     return buf, nil
 }
 
+func (r *RadosIoCtx) ReadRaw(oid string, length, offset uint64, buf unsafe.Pointer) int {
+    cerr := C.rados_read(*r.ctx, C.CString(oid), (*C.char)(buf), C.size_t(length), C.uint64_t(offset))
+    return int(cerr)
+}
+
 func (r *RadosIoCtx) Remove(oid string) error {
     cerr := C.rados_remove(*r.ctx, C.CString(oid))
     if cerr < 0 {
