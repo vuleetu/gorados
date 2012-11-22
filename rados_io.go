@@ -43,7 +43,7 @@ func (r *RadosIoCtx) Stat(oid string) (*RadosObjectStat, error){
     var time_t C.time_t
     cerr := C.rados_stat(*r.ctx, C.CString(oid), &size, &time_t)
     if cerr < 0 {
-        log.Println("Get object stat failed, error is", C.GoString(C.strerror(-cerr)))
+        //log.Println("Get object stat failed, error is", C.GoString(C.strerror(-cerr)))
         return nil, errors.New("Get object stat failed")
     }
 

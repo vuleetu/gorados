@@ -53,8 +53,8 @@ func (r *RadosIoCtx) SnapList() ([]RadosSnapId, error) {
     if cerr > 0 {
         buf := make([]RadosSnapId, cerr)
 
-        for k, snapid := range snap {
-            buf[k] = RadosSnapId(snapid)
+        for k, _ := range snap {
+            buf[k] = RadosSnapId(snap[k])
         }
         return buf, nil
     }
