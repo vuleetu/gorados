@@ -3,6 +3,7 @@ package gorados
 /*
 #cgo LDFLAGS: -lrados
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "rados/librados.h"
 */
@@ -10,6 +11,7 @@ import "C"
 
 import (
     "errors"
+    "unsafe"
     "log"
 )
 
@@ -33,7 +35,12 @@ func (r *Rados) ClusterCreate() error {
 func (r *Rados) ClusterCreateAsUser(id string) error {
     var cluster C.rados_t
     //cerr := C.rados_create(&cluster, (*C.char)(unsafe.Pointer(uintptr(0))))
-    cerr := C.rados_create(&cluster, C.CString(id))
+    cid := C.CString(id)
+    defer func(){
+        C.free(unsafe.Pointer(cid))
+    }()
+
+    cerr := C.rados_create(&cluster, cid)
     if cerr < 0 {
         return errors.New("create cluster handler failed")
     }
@@ -63,7 +70,11 @@ func (r *Rados) ClusterAutoConfig() error {
 }
 
 func (r *Rados) ClusterConfig(filename string) error {
-    cerr := C.rados_conf_read_file(*(r.cluster), C.CString(filename))
+    cfilename := C.CString(filename)
+    defer func(){
+        C.free(unsafe.Pointer(cfilename))
+    }()
+    cerr := C.rados_conf_read_file(*(r.cluster), cfilename)
     if cerr < 0 {
         return errors.New("read config failed")
     }
@@ -72,7 +83,13 @@ func (r *Rados) ClusterConfig(filename string) error {
 }
 
 func (r *Rados) ClusterSetConfig(option, value string) error {
-    cerr := C.rados_conf_set(*r.cluster, C.CString(option), C.CString(value))
+    coption := C.CString(option)
+    cvalue := C.CString(value)
+    defer func(){
+        C.free(unsafe.Pointer(coption))
+        C.free(unsafe.Pointer(cvalue))
+    }()
+    cerr := C.rados_conf_set(*r.cluster, coption, cvalue)
     if cerr < 0 {
         return errors.New("set config failed")
     }

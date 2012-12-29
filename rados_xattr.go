@@ -3,6 +3,7 @@ package gorados
 /*
 #cgo LDFLAGS: -lrados
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "rados/librados.h"
 */
@@ -10,13 +11,20 @@ import "C"
 
 import (
     "errors"
+    "unsafe"
 )
 
 const MAX_XATTR_LEN = 255
 
 func (r *RadosIoCtx) GetXattr(oid, name string) (string, error) {
     var buf [MAX_XATTR_LEN]C.char
-    cerr := C.rados_getxattr(*r.ctx, C.CString(oid), C.CString(name), &buf[0], MAX_XATTR_LEN)
+    cname := C.CString(name)
+    coid := C.CString(oid)
+    defer func(){
+        C.free(unsafe.Pointer(cname))
+        C.free(unsafe.Pointer(coid))
+    }()
+    cerr := C.rados_getxattr(*r.ctx, coid, cname, &buf[0], MAX_XATTR_LEN)
     if cerr < 0 {
         return "", errors.New("get xattr failed")
     }
@@ -25,7 +33,15 @@ func (r *RadosIoCtx) GetXattr(oid, name string) (string, error) {
 }
 
 func (r *RadosIoCtx) SetXattr(oid, name, value string) error {
-    cerr := C.rados_setxattr(*r.ctx, C.CString(oid), C.CString(name), C.CString(value), C.size_t(len(value)))
+    cname := C.CString(name)
+    coid := C.CString(oid)
+    cvalue := C.CString(value)
+    defer func(){
+        C.free(unsafe.Pointer(cname))
+        C.free(unsafe.Pointer(coid))
+        C.free(unsafe.Pointer(cvalue))
+    }()
+    cerr := C.rados_setxattr(*r.ctx, coid, cname, cvalue, C.size_t(len(value)))
     if cerr < 0 {
         return errors.New("set xattr failed")
     }
@@ -34,7 +50,13 @@ func (r *RadosIoCtx) SetXattr(oid, name, value string) error {
 }
 
 func (r *RadosIoCtx) RmXattr(oid, name string) error {
-    cerr := C.rados_rmxattr(*r.ctx, C.CString(oid), C.CString(name))
+    cname := C.CString(name)
+    coid := C.CString(oid)
+    defer func(){
+        C.free(unsafe.Pointer(cname))
+        C.free(unsafe.Pointer(coid))
+    }()
+    cerr := C.rados_rmxattr(*r.ctx, coid, cname)
     if cerr < 0 {
         return errors.New("delete xattr failed")
     }

@@ -3,6 +3,7 @@ package gorados
 /*
 #cgo LDFLAGS: -lrados
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "rados/librados.h"
 */
@@ -10,12 +11,17 @@ import "C"
 
 import (
     "errors"
+    "unsafe"
 )
 
 const MAX_SNAP_LEN = 2000
 
 func (r *RadosIoCtx) SnapCreate(snapname string) error {
-    cerr := C.rados_ioctx_snap_create(*r.ctx, C.CString(snapname))
+    csnapname := C.CString(snapname)
+    defer func(){
+        C.free(unsafe.Pointer(csnapname))
+    }()
+    cerr := C.rados_ioctx_snap_create(*r.ctx, csnapname)
     if cerr < 0 {
         return errors.New("create snap failed")
     }
@@ -24,7 +30,11 @@ func (r *RadosIoCtx) SnapCreate(snapname string) error {
 }
 
 func (r *RadosIoCtx) SnapRemove(snapname string) error {
-    cerr := C.rados_ioctx_snap_remove(*r.ctx, C.CString(snapname))
+    csnapname := C.CString(snapname)
+    defer func(){
+        C.free(unsafe.Pointer(csnapname))
+    }()
+    cerr := C.rados_ioctx_snap_remove(*r.ctx, csnapname)
     if cerr < 0 {
         return errors.New("remove snap failed")
     }
@@ -33,7 +43,13 @@ func (r *RadosIoCtx) SnapRemove(snapname string) error {
 }
 
 func (r *RadosIoCtx) SnapRollBack(oid, snapname string) error {
-    cerr := C.rados_rollback(*r.ctx, C.CString(oid), C.CString(snapname))
+    csnapname := C.CString(snapname)
+    coid := C.CString(oid)
+    defer func(){
+        C.free(unsafe.Pointer(csnapname))
+        C.free(unsafe.Pointer(coid))
+    }()
+    cerr := C.rados_rollback(*r.ctx, coid, csnapname)
     if cerr < 0 {
         return errors.New("rollback snap failed")
     }
@@ -63,7 +79,11 @@ func (r *RadosIoCtx) SnapList() ([]RadosSnapId, error) {
 
 func (r *RadosIoCtx) SnapLookup(snapname string) (RadosSnapId, error) {
     var snapid C.rados_snap_t
-    cerr := C.rados_ioctx_snap_lookup(*r.ctx, C.CString(snapname), &snapid)
+    csnapname := C.CString(snapname)
+    defer func(){
+        C.free(unsafe.Pointer(csnapname))
+    }()
+    cerr := C.rados_ioctx_snap_lookup(*r.ctx, csnapname, &snapid)
     if cerr < 0 {
         return 0, errors.New("lookup snap failed")
     }

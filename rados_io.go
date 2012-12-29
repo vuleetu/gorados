@@ -3,6 +3,7 @@ package gorados
 /*
 #cgo LDFLAGS: -lrados
 #include <string.h>
+#include <stdlib.h>
 #include <errno.h>
 #include "rados/librados.h"
 */
@@ -20,8 +21,12 @@ type RadosIoCtx struct{
 }
 
 func (r *Rados) IoCtxCreate(poolname string) (*RadosIoCtx, error) {
+    cpoolname := C.CString(poolname)
+    defer func(){
+        C.free(unsafe.Pointer(cpoolname))
+    }()
     var ctx C.rados_ioctx_t
-    cerr := C.rados_ioctx_create(*r.cluster, C.CString(poolname), &ctx)
+    cerr := C.rados_ioctx_create(*r.cluster, cpoolname, &ctx)
     if cerr < 0 {
         return nil, errors.New("create io contxt failed")
     }
@@ -41,7 +46,12 @@ type RadosObjectStat struct{
 func (r *RadosIoCtx) Stat(oid string) (*RadosObjectStat, error){
     var size  C.uint64_t
     var time_t C.time_t
-    cerr := C.rados_stat(*r.ctx, C.CString(oid), &size, &time_t)
+    coid := C.CString(oid)
+    defer func(){
+        C.free(unsafe.Pointer(coid))
+    }()
+
+    cerr := C.rados_stat(*r.ctx, coid, &size, &time_t)
     if cerr < 0 {
         //log.Println("Get object stat failed, error is", C.GoString(C.strerror(-cerr)))
         return nil, errors.New("Get object stat failed")
@@ -86,7 +96,11 @@ func (r *RadosIoCtx) GetPoolName() (string, error) {
 }
 
 func (r *RadosIoCtx) Write(oid string, bin []byte, offset uint64) error {
-    cerr := C.rados_write(*r.ctx, C.CString(oid), (*C.char)(unsafe.Pointer(&bin[0])), C.size_t(len(bin)), C.uint64_t(offset))
+    coid := C.CString(oid)
+    defer func(){
+        C.free(unsafe.Pointer(coid))
+    }()
+    cerr := C.rados_write(*r.ctx, coid, (*C.char)(unsafe.Pointer(&bin[0])), C.size_t(len(bin)), C.uint64_t(offset))
     if cerr < 0 {
         return errors.New("write data failed")
     }
@@ -94,7 +108,11 @@ func (r *RadosIoCtx) Write(oid string, bin []byte, offset uint64) error {
 }
 
 func (r *RadosIoCtx) WriteFull(oid string, bin []byte) error {
-    cerr := C.rados_write_full(*r.ctx, C.CString(oid), (*C.char)(unsafe.Pointer(&bin[0])), C.size_t(len(bin)))
+    coid := C.CString(oid)
+    defer func(){
+        C.free(unsafe.Pointer(coid))
+    }()
+    cerr := C.rados_write_full(*r.ctx, coid, (*C.char)(unsafe.Pointer(&bin[0])), C.size_t(len(bin)))
     if cerr < 0 {
         return errors.New("write full data failed")
     }
@@ -102,7 +120,11 @@ func (r *RadosIoCtx) WriteFull(oid string, bin []byte) error {
 }
 
 func (r *RadosIoCtx) Append(oid string, bin []byte) error {
-    cerr := C.rados_append(*r.ctx, C.CString(oid), (*C.char)(unsafe.Pointer(&bin[0])), C.size_t(len(bin)))
+    coid := C.CString(oid)
+    defer func(){
+        C.free(unsafe.Pointer(coid))
+    }()
+    cerr := C.rados_append(*r.ctx, coid, (*C.char)(unsafe.Pointer(&bin[0])), C.size_t(len(bin)))
     if cerr < 0 {
         return errors.New("append data failed")
     }
@@ -111,7 +133,11 @@ func (r *RadosIoCtx) Append(oid string, bin []byte) error {
 
 func (r *RadosIoCtx) Read(oid string, length, offset uint64) ([]byte, error) {
     var buf = make([]byte, length)
-    cerr := C.rados_read(*r.ctx, C.CString(oid), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(length), C.uint64_t(offset))
+    coid := C.CString(oid)
+    defer func(){
+        C.free(unsafe.Pointer(coid))
+    }()
+    cerr := C.rados_read(*r.ctx, coid, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(length), C.uint64_t(offset))
     if cerr < 0 {
         return nil, errors.New("read data failed")
     }
@@ -119,12 +145,20 @@ func (r *RadosIoCtx) Read(oid string, length, offset uint64) ([]byte, error) {
 }
 
 func (r *RadosIoCtx) ReadRaw(oid string, length, offset uint64, buf unsafe.Pointer) int {
-    cerr := C.rados_read(*r.ctx, C.CString(oid), (*C.char)(buf), C.size_t(length), C.uint64_t(offset))
+    coid := C.CString(oid)
+    defer func(){
+        C.free(unsafe.Pointer(coid))
+    }()
+    cerr := C.rados_read(*r.ctx, coid, (*C.char)(buf), C.size_t(length), C.uint64_t(offset))
     return int(cerr)
 }
 
 func (r *RadosIoCtx) Remove(oid string) error {
-    cerr := C.rados_remove(*r.ctx, C.CString(oid))
+    coid := C.CString(oid)
+    defer func(){
+        C.free(unsafe.Pointer(coid))
+    }()
+    cerr := C.rados_remove(*r.ctx, coid)
     if cerr < 0 {
         return errors.New("remove object failed")
     }
@@ -132,7 +166,11 @@ func (r *RadosIoCtx) Remove(oid string) error {
 }
 
 func (r *RadosIoCtx) Trunc(oid string, length uint64) error {
-    cerr := C.rados_trunc(*r.ctx, C.CString(oid), C.uint64_t(length))
+    coid := C.CString(oid)
+    defer func(){
+        C.free(unsafe.Pointer(coid))
+    }()
+    cerr := C.rados_trunc(*r.ctx, coid, C.uint64_t(length))
     if cerr < 0 {
         return errors.New("resize object failed")
     }

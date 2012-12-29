@@ -3,6 +3,7 @@ package gorados
 /*
 #cgo LDFLAGS: -lrados
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "rados/librados.h"
 */
@@ -23,7 +24,11 @@ func (r *Rados) PoolList() [][]byte {
 }
 
 func (r *Rados) PoolLookUp(poolname string) (int64, error) {
-    cerr := C.rados_pool_lookup(*r.cluster, C.CString(poolname))
+    cpoolname := C.CString(poolname)
+    defer func(){
+        C.free(unsafe.Pointer(cpoolname))
+    }()
+    cerr := C.rados_pool_lookup(*r.cluster, cpoolname)
     if cerr < 0 {
         return 0, errors.New("Pool not found")
     }
@@ -42,7 +47,11 @@ func (r *Rados) PoolLookUp(poolname string) (int64, error) {
 }*/
 
 func (r *Rados) PoolCreate(poolname string) error {
-    cerr := C.rados_pool_create(*r.cluster, C.CString(poolname))
+    cpoolname := C.CString(poolname)
+    defer func(){
+        C.free(unsafe.Pointer(cpoolname))
+    }()
+    cerr := C.rados_pool_create(*r.cluster, cpoolname)
     if cerr < 0 {
         return errors.New("create pool failed")
     }
@@ -51,7 +60,11 @@ func (r *Rados) PoolCreate(poolname string) error {
 }
 
 func (r *Rados) PoolCreateWithAuid(poolname string, auid uint64) error {
-    cerr := C.rados_pool_create_with_auid(*r.cluster, C.CString(poolname), C.uint64_t(auid))
+    cpoolname := C.CString(poolname)
+    defer func(){
+        C.free(unsafe.Pointer(cpoolname))
+    }()
+    cerr := C.rados_pool_create_with_auid(*r.cluster, cpoolname, C.uint64_t(auid))
     if cerr < 0 {
         return errors.New("create pool failed")
     }
@@ -60,7 +73,11 @@ func (r *Rados) PoolCreateWithAuid(poolname string, auid uint64) error {
 }
 
 func (r *Rados) PoolDelete(poolname string) error {
-    cerr := C.rados_pool_delete(*r.cluster, C.CString(poolname))
+    cpoolname := C.CString(poolname)
+    defer func(){
+        C.free(unsafe.Pointer(cpoolname))
+    }()
+    cerr := C.rados_pool_delete(*r.cluster, cpoolname)
     if cerr < 0 {
         return errors.New("delete pool failed")
     }
