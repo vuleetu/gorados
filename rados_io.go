@@ -28,7 +28,7 @@ func (r *Rados) IoCtxCreate(poolname string) (*RadosIoCtx, error) {
     var ctx C.rados_ioctx_t
     cerr := C.rados_ioctx_create(*r.cluster, cpoolname, &ctx)
     if cerr < 0 {
-        return nil, errors.New("create io contxt failed")
+        return nil, errors.New("create io contxt failed:" + C.GoString(C.strerror(-cerr)))
     }
 
     return &RadosIoCtx{&ctx}, nil
