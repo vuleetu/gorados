@@ -100,7 +100,14 @@ func (r *RadosIoCtx) Write(oid string, bin []byte, offset uint64) error {
     defer func(){
         C.free(unsafe.Pointer(coid))
     }()
-    cerr := C.rados_write(*r.ctx, coid, (*C.char)(unsafe.Pointer(&bin[0])), C.size_t(len(bin)), C.uint64_t(offset))
+
+    originLen := len(bin)
+
+    if originLen == 0 {
+        bin = []byte{0}
+    }
+
+    cerr := C.rados_write(*r.ctx, coid, (*C.char)(unsafe.Pointer(&bin[0])), C.size_t(originLen), C.uint64_t(offset))
     if cerr < 0 {
         return errors.New("write data failed")
     }
